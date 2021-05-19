@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+      args:
+        ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: 'redis:6379'
+      DB_URL: 'database.sqlite3'
+    volumes:
+      - .:/opt/app
+      - ./conf:/etc/wireguard
+    ports:
+      - '8000:8000'
+      - '51820:51820/udp'
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+
+  redis:
+    image: 'redis:6'
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379:6379'
